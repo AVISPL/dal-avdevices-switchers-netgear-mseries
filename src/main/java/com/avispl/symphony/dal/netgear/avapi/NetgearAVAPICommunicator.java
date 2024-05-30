@@ -288,7 +288,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
     public List<Statistics> getMultipleStatistics() throws Exception {
         ExtendedStatistics extendedStatistics = new ExtendedStatistics();
         Map<String, String> statistics = new HashMap<>();
+        List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
         extendedStatistics.setStatistics(statistics);
+        extendedStatistics.setControllableProperties(controllableProperties);
 
         if (monitoringMode == MonitoringMode.STACK) {
             return Arrays.asList(extendedStatistics);
@@ -305,8 +307,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPOEInformation();
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
-        statistics.putAll(aggregatedStackUnits.get(managementUnitSerialNumber).getProperties());
 
+        AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(managementUnitSerialNumber);
+        statistics.putAll(aggregatedUnit.getProperties());
+        controllableProperties.addAll(aggregatedUnit.getControllableProperties());
         return Collections.singletonList(extendedStatistics);
     }
 
