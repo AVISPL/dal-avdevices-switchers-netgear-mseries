@@ -309,9 +309,19 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPortOutboundStatisticsInformation();
 
         AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(managementUnitSerialNumber);
+        List<Statistics> unitStatisticsList = aggregatedUnit.getMonitoredStatistics();
+        List<Statistics> statisticsList = new ArrayList<>();
+
+        if (unitStatisticsList != null && !unitStatisticsList.isEmpty()) {
+            Statistics unitStatisticsInstance = unitStatisticsList.get(0);
+            if (unitStatisticsInstance instanceof GenericStatistics) {
+                statisticsList.add(unitStatisticsInstance);
+            }
+        }
         statistics.putAll(aggregatedUnit.getProperties());
         controllableProperties.addAll(aggregatedUnit.getControllableProperties());
-        return Collections.singletonList(extendedStatistics);
+        statisticsList.add(extendedStatistics);
+        return statisticsList;
     }
 
     @Override

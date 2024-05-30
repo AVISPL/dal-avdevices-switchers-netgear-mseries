@@ -5,6 +5,7 @@ package com.avispl.symphony.dal.netgear.avapi;
 
 import com.avispl.symphony.api.dal.dto.control.ControllableProperty;
 import com.avispl.symphony.api.dal.dto.monitor.ExtendedStatistics;
+import com.avispl.symphony.api.dal.dto.monitor.GenericStatistics;
 import com.avispl.symphony.api.dal.dto.monitor.Statistics;
 import com.avispl.symphony.api.dal.dto.monitor.aggregator.AggregatedDevice;
 import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
@@ -51,7 +52,8 @@ public class NetgearAVAPICommunicatorTest {
         communicator.setManagementUnitSerialNumber("74W12C57F000F");
         List<Statistics> statisticsList = communicator.getMultipleStatistics();
         List<AggregatedDevice> units = communicator.retrieveMultipleStatistics();
-        Assert.isTrue(!((ExtendedStatistics)statisticsList.get(0)).getStatistics().isEmpty(), "Device multiple statistics shouldn't be empty");
+        Assert.isTrue(((GenericStatistics)statisticsList.get(0)).getCpuPercentage() != null, "Device multiple statistics shouldn't be empty");
+        Assert.isTrue(!((ExtendedStatistics)statisticsList.get(1)).getStatistics().isEmpty(), "Device multiple statistics should not be empty");
         Assert.isTrue(units.isEmpty(), "Aggregated devices list should be empty");
     }
 
