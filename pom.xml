@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.avispl.symphony.dal.netgear.mseries</groupId>
-    <artifactId>dal-avdevices-switchers-netgear-mseries</artifactId>
+    <artifactId>symphony-dal-avdevices-switchers-netgear-mseries</artifactId>
     <version>1.0.0</version>
     <properties>
         <symphonyApiVersion>RELEASE</symphonyApiVersion>

@@ -22,7 +22,6 @@ import com.avispl.symphony.dal.netgear.avapi.http.OctetStreamToJsonConverter;
 import com.avispl.symphony.dal.netgear.avapi.utils.Utils;
 import com.avispl.symphony.dal.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -203,7 +202,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
      */
     public void setIncludePropertyGroups(String includePropertyGroups) {
         this.includePropertyGroups.clear();
-        Arrays.stream(includePropertyGroups.split(",")).forEach(propertyName -> this.includePropertyGroups.add(propertyName.trim()));;
+        Arrays.stream(includePropertyGroups.split(",")).forEach(propertyName -> this.includePropertyGroups.add(propertyName.trim()));
     }
 
     public NetgearAVAPICommunicator() throws IOException {
@@ -226,6 +225,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
 
     @Override
     protected void internalDestroy() {
+        aggregatedStackUnits.clear();
+        serialNumberToUnitNumber.clear();
+
         super.internalDestroy();
     }
 
@@ -284,11 +286,11 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
 
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
-        Long startExecution = System.currentTimeMillis();
-
         ExtendedStatistics extendedStatistics = new ExtendedStatistics();
         Map<String, String> statistics = new HashMap<>();
+        List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
         extendedStatistics.setStatistics(statistics);
+        extendedStatistics.setControllableProperties(controllableProperties);
 
         if (monitoringMode == MonitoringMode.STACK) {
             return Arrays.asList(extendedStatistics);
@@ -305,14 +307,15 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPOEInformation();
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
-        statistics.putAll(aggregatedStackUnits.get(managementUnitSerialNumber).getProperties());
 
-        return Arrays.asList(extendedStatistics);
+        AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(managementUnitSerialNumber);
+        statistics.putAll(aggregatedUnit.getProperties());
+        controllableProperties.addAll(aggregatedUnit.getControllableProperties());
+        return Collections.singletonList(extendedStatistics);
     }
 
     @Override
     public List<AggregatedDevice> retrieveMultipleStatistics() throws Exception {
-        Long startExecution = System.currentTimeMillis();
         if (monitoringMode == MonitoringMode.STACK) {
             processDeviceInformation();
             processPortInformation();
@@ -1033,7 +1036,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             Long hours = Utils.extractNumber(periods.get(1));
             Long minutes = Utils.extractNumber(periods.get(2));
             Long seconds = Utils.extractNumber(periods.get(3));
-            uptimeValue = ((days * 24L * 60 * 60 + hours * 60 * 60 + minutes * 60 + seconds) * 1000L);
+            uptimeValue = (days * 24L * 60 * 60 + hours * 60 * 60 + minutes * 60 + seconds) * 1000L;
         } catch (ArrayIndexOutOfBoundsException iob) {
             logger.error("Unable to process device uptime with a given value: " + uptime);
             return uptimeValue;
