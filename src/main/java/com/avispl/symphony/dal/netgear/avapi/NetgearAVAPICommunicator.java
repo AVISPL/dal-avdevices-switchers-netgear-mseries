@@ -306,7 +306,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPortOutboundStatisticsInformation();
 
         boolean managementSerialNumberSpecified = StringUtils.isNullOrEmpty(managementUnitSerialNumber);
-        if (managementSerialNumberSpecified && (aggregatedStackUnits.size() != 1)) {
+        if (managementSerialNumberSpecified && aggregatedStackUnits.size() != 1) {
             throw new ServiceConfigurationError("Management unit serial number(managementUnitSerialNumber) is not configured, ambiguous monitoring settings. Please check adapter configuration.");
         }
 
