@@ -745,21 +745,6 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         }
         JsonNode poePortsCfg = doGet(Constants.URI.POE_PORTS_CFG, JsonNode.class);
 
-        poePortsCfg = new ObjectMapper().readTree("{\"poePortConfig\": [{\n" +
-                "    \"unit\": 1,\n" +
-                "    \"portNum\": 1,\n" +
-                "    \"port\": \"1\",\n" +
-                "    \"enable\": true,\n" +
-                "    \"powerLimitMode\": 1,\n" +
-                "    \"classification\": 0,\n" +
-                "    \"currentPower\": 0,\n" +
-                "    \"powerLimit\": 32000,\n" +
-                "    \"status\": 1,\n" +
-                "    \"detectionType\": 2,\n" +
-                "    \"priority\": 1,\n" +
-                "    \"powerMode\": 3,\n" +
-                "    \"schedule\": \"None\"\n" +
-                "}]}");
         ArrayNode poeNodes = poePortsCfg.withArray(Constants.JsonPaths.POE_PORT_CONFIG);
         for (JsonNode poeNode: poeNodes) {
             Map<String, String> poeProperties = new HashMap<>();
