@@ -6,7 +6,6 @@ package com.avispl.symphony.dal.netgear.avapi.http;
 import com.avispl.symphony.dal.aggregator.parser.AggregatedDeviceProcessor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpInputMessage;
@@ -18,7 +17,6 @@ import org.springframework.http.converter.HttpMessageNotWritableException;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**

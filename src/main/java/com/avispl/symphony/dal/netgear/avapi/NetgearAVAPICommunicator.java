@@ -203,7 +203,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
      */
     public void setIncludePropertyGroups(String includePropertyGroups) {
         this.includePropertyGroups.clear();
-        Arrays.stream(includePropertyGroups.split(",")).forEach(propertyName -> this.includePropertyGroups.add(propertyName.trim()));;
+        Arrays.stream(includePropertyGroups.split(",")).forEach(propertyName -> this.includePropertyGroups.add(propertyName.trim()));
     }
 
     public NetgearAVAPICommunicator() throws IOException {
@@ -226,6 +226,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
 
     @Override
     protected void internalDestroy() {
+        aggregatedStackUnits.clear();
+        serialNumberToUnitNumber.clear();
+
         super.internalDestroy();
     }
 
@@ -284,20 +287,16 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
 
     @Override
     public List<Statistics> getMultipleStatistics() throws Exception {
-        Long startExecution = System.currentTimeMillis();
-
         ExtendedStatistics extendedStatistics = new ExtendedStatistics();
         Map<String, String> statistics = new HashMap<>();
+        List<AdvancedControllableProperty> controllableProperties = new ArrayList<>();
         extendedStatistics.setStatistics(statistics);
+        extendedStatistics.setControllableProperties(controllableProperties);
 
-        if (monitoringMode == MonitoringMode.STACK) {
-            return Arrays.asList(extendedStatistics);
-        }
-        if (StringUtils.isNullOrEmpty(managementUnitSerialNumber)) {
-            statistics.put("Error", "Management unit serial number is not configured.");
-            return Arrays.asList(extendedStatistics);
-        }
         generateAdapterMetadata(statistics);
+        if (monitoringMode == MonitoringMode.STACK) {
+            return Collections.singletonList(extendedStatistics);
+        }
         processDeviceInformation();
         processPortInformation();
         processPortConfigurationInformation();
@@ -305,14 +304,38 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPOEInformation();
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
-        statistics.putAll(aggregatedStackUnits.get(managementUnitSerialNumber).getProperties());
 
-        return Arrays.asList(extendedStatistics);
+        boolean managementSerialNumberSpecified = StringUtils.isNullOrEmpty(managementUnitSerialNumber);
+        if (managementSerialNumberSpecified && (aggregatedStackUnits.size() != 1)) {
+            throw new ServiceConfigurationError("Management unit serial number(managementUnitSerialNumber) is not configured, ambiguous monitoring settings. Please check adapter configuration.");
+        }
+
+        AggregatedDevice aggregatedUnit;
+        if (managementSerialNumberSpecified) {
+            aggregatedUnit = aggregatedStackUnits.get(managementUnitSerialNumber);
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn("Management unit serial number(managementUnitSerialNumber) is not configured. Falling back to unit 1 for direct monitoring.");
+            }
+            aggregatedUnit = aggregatedStackUnits.get(serialNumberToUnitNumber.inverse().get("1"));
+        }
+        List<Statistics> unitStatisticsList = aggregatedUnit.getMonitoredStatistics();
+        List<Statistics> statisticsList = new ArrayList<>();
+
+        if (unitStatisticsList != null && !unitStatisticsList.isEmpty()) {
+            Statistics unitStatisticsInstance = unitStatisticsList.get(0);
+            if (unitStatisticsInstance instanceof GenericStatistics) {
+                statisticsList.add(unitStatisticsInstance);
+            }
+        }
+        statistics.putAll(aggregatedUnit.getProperties());
+        controllableProperties.addAll(aggregatedUnit.getControllableProperties());
+        statisticsList.add(extendedStatistics);
+        return statisticsList;
     }
 
     @Override
     public List<AggregatedDevice> retrieveMultipleStatistics() throws Exception {
-        Long startExecution = System.currentTimeMillis();
         if (monitoringMode == MonitoringMode.STACK) {
             processDeviceInformation();
             processPortInformation();
@@ -722,6 +745,21 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         }
         JsonNode poePortsCfg = doGet(Constants.URI.POE_PORTS_CFG, JsonNode.class);
 
+        poePortsCfg = new ObjectMapper().readTree("{\"poePortConfig\": [{\n" +
+                "    \"unit\": 1,\n" +
+                "    \"portNum\": 1,\n" +
+                "    \"port\": \"1\",\n" +
+                "    \"enable\": true,\n" +
+                "    \"powerLimitMode\": 1,\n" +
+                "    \"classification\": 0,\n" +
+                "    \"currentPower\": 0,\n" +
+                "    \"powerLimit\": 32000,\n" +
+                "    \"status\": 1,\n" +
+                "    \"detectionType\": 2,\n" +
+                "    \"priority\": 1,\n" +
+                "    \"powerMode\": 3,\n" +
+                "    \"schedule\": \"None\"\n" +
+                "}]}");
         ArrayNode poeNodes = poePortsCfg.withArray(Constants.JsonPaths.POE_PORT_CONFIG);
         for (JsonNode poeNode: poeNodes) {
             Map<String, String> poeProperties = new HashMap<>();
@@ -1033,7 +1071,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             Long hours = Utils.extractNumber(periods.get(1));
             Long minutes = Utils.extractNumber(periods.get(2));
             Long seconds = Utils.extractNumber(periods.get(3));
-            uptimeValue = ((days * 24L * 60 * 60 + hours * 60 * 60 + minutes * 60 + seconds) * 1000L);
+            uptimeValue = (days * 24L * 60 * 60 + hours * 60 * 60 + minutes * 60 + seconds) * 1000L;
         } catch (ArrayIndexOutOfBoundsException iob) {
             logger.error("Unable to process device uptime with a given value: " + uptime);
             return uptimeValue;
