@@ -22,7 +22,6 @@ import com.avispl.symphony.dal.netgear.avapi.http.OctetStreamToJsonConverter;
 import com.avispl.symphony.dal.netgear.avapi.utils.Utils;
 import com.avispl.symphony.dal.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
