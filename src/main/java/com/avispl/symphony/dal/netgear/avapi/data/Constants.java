@@ -178,7 +178,7 @@ public class Constants {
         String DESCRIPTION = "Description";
         String FAN_N_GROUP = "Fan_%s#";
         String SENSOR_N_GROUP = "Sensor_%s#";
-        String PORT_N_POE_GROUP = "Port00_%02d_POE#";
+        String PORT_N_POE_GROUP = "Port00_%02d_POEConfiguration#";
         String PORT_N_GENERAL_INFORMATION_GROUP = "Port%s_GeneralInformation#";
         String PORT_N_NEIGHBOR_INFORMATION_N_GROUP = "Port%s_NeighborInformation_%02d#";
         String PORT_N_STATISTICS_N_GROUP = "Port%s_Statistics#%s";

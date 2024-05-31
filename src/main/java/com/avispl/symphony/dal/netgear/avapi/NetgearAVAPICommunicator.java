@@ -22,6 +22,7 @@ import com.avispl.symphony.dal.netgear.avapi.http.OctetStreamToJsonConverter;
 import com.avispl.symphony.dal.netgear.avapi.utils.Utils;
 import com.avispl.symphony.dal.util.StringUtils;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -292,14 +293,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         extendedStatistics.setStatistics(statistics);
         extendedStatistics.setControllableProperties(controllableProperties);
 
-        if (monitoringMode == MonitoringMode.STACK) {
-            return Arrays.asList(extendedStatistics);
-        }
-        if (StringUtils.isNullOrEmpty(managementUnitSerialNumber)) {
-            statistics.put("Error", "Management unit serial number is not configured.");
-            return Arrays.asList(extendedStatistics);
-        }
         generateAdapterMetadata(statistics);
+        if (monitoringMode == MonitoringMode.STACK) {
+            return Collections.singletonList(extendedStatistics);
+        }
         processDeviceInformation();
         processPortInformation();
         processPortConfigurationInformation();
@@ -308,7 +305,20 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
 
-        AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(managementUnitSerialNumber);
+        boolean managementSerialNumberSpecified = StringUtils.isNullOrEmpty(managementUnitSerialNumber);
+        if (managementSerialNumberSpecified && (aggregatedStackUnits.size() != 1)) {
+            throw new ServiceConfigurationError("Management unit serial number(managementUnitSerialNumber) is not configured, ambiguous monitoring settings. Please check adapter configuration.");
+        }
+
+        AggregatedDevice aggregatedUnit;
+        if (managementSerialNumberSpecified) {
+            aggregatedUnit = aggregatedStackUnits.get(managementUnitSerialNumber);
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn("Management unit serial number(managementUnitSerialNumber) is not configured. Falling back to unit 1 for direct monitoring.");
+            }
+            aggregatedUnit = aggregatedStackUnits.get(serialNumberToUnitNumber.inverse().get("1"));
+        }
         List<Statistics> unitStatisticsList = aggregatedUnit.getMonitoredStatistics();
         List<Statistics> statisticsList = new ArrayList<>();
 
@@ -735,6 +745,21 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         }
         JsonNode poePortsCfg = doGet(Constants.URI.POE_PORTS_CFG, JsonNode.class);
 
+        poePortsCfg = new ObjectMapper().readTree("{\"poePortConfig\": [{\n" +
+                "    \"unit\": 1,\n" +
+                "    \"portNum\": 1,\n" +
+                "    \"port\": \"1\",\n" +
+                "    \"enable\": true,\n" +
+                "    \"powerLimitMode\": 1,\n" +
+                "    \"classification\": 0,\n" +
+                "    \"currentPower\": 0,\n" +
+                "    \"powerLimit\": 32000,\n" +
+                "    \"status\": 1,\n" +
+                "    \"detectionType\": 2,\n" +
+                "    \"priority\": 1,\n" +
+                "    \"powerMode\": 3,\n" +
+                "    \"schedule\": \"None\"\n" +
+                "}]}");
         ArrayNode poeNodes = poePortsCfg.withArray(Constants.JsonPaths.POE_PORT_CONFIG);
         for (JsonNode poeNode: poeNodes) {
             Map<String, String> poeProperties = new HashMap<>();
