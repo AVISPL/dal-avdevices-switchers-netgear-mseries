@@ -25,6 +25,12 @@ public enum MonitoringMode {
         this.mode = mode;
     }
 
+    /**
+     * Retrieve MonitoringMode instance based on string value of mode - Unit or Stack
+     *
+     * @param mode string value of mode
+     * @response MonitoringMode instance, based on the mode value
+     * */
     public static MonitoringMode ofString(String mode) {
         if (logger.isDebugEnabled()) {
             logger.debug("Requested Monitoring Mode: " + mode);
