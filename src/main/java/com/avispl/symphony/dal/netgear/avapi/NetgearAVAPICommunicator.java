@@ -304,7 +304,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
 
-        boolean managementSerialNumberSpecified = StringUtils.isNullOrEmpty(managementUnitSerialNumber);
+        boolean managementSerialNumberSpecified = StringUtils.isNotNullOrEmpty(managementUnitSerialNumber);
         if (managementSerialNumberSpecified && aggregatedStackUnits.size() != 1) {
             throw new ServiceConfigurationError("Management unit serial number(managementUnitSerialNumber) is not configured, ambiguous monitoring settings. Please check adapter configuration.");
         }
@@ -328,7 +328,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             }
         }
         statistics.putAll(aggregatedUnit.getProperties());
-        controllableProperties.addAll(aggregatedUnit.getControllableProperties());
+        List<AdvancedControllableProperty> aggregatedUnitControls = aggregatedUnit.getControllableProperties();
+        if (aggregatedUnitControls != null) {
+            controllableProperties.addAll(aggregatedUnit.getControllableProperties());
+        }
         statisticsList.add(extendedStatistics);
         return statisticsList;
     }
@@ -501,6 +504,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processDeviceCPUInformation(deviceInfoResponse.withArray(Constants.JsonPaths.DEVICE_INFO_CPU));
         processDeviceMemoryInformation(deviceInfoResponse.withArray(Constants.JsonPaths.DEVICE_INFO_MEMORY));
 
+        if (StringUtils.isNullOrEmpty(managementUnitSerialNumber)) {
+           managementUnitSerialNumber = aggregatedStackUnits.values().stream().findFirst().map(AggregatedDevice::getSerialNumber).orElse(null);
+        }
         if (StringUtils.isNotNullOrEmpty(managementUnitSerialNumber)) {
             AggregatedDevice unitDevice = aggregatedStackUnits.get(managementUnitSerialNumber);
             if (unitDevice == null) {
