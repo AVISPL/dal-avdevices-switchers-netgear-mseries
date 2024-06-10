@@ -110,8 +110,8 @@ models:
         HostMACAddress: at("/hostMacAddress")
         RemotePortId: at("/remotePortId")
         Source: at("/source")
-        InBitRate(Bps): at("/inBitRate")
-        OutBitRate(Bps): at("/outBitRate")
+        InBitRate(Mbps): at("/inBitRate")
+        OutBitRate(Mbps): at("/outBitRate")
   - model:
       name: PortPOEInformation
       filter: true
@@ -138,7 +138,7 @@ models:
         InBcastPkts: at("/inBcastPkts")
         InDroppedPkts: at("/inDropPkts")
         RxError: at("/rxError")
-        InBitRate(Bps): at("/inBitRate")
+        InBitRate(Mbps): at("/inBitRate")
   - model:
       name: OutPortStatistics
       filter: true
@@ -147,4 +147,4 @@ models:
         OutUcastPkts: at("/outUcastPkts")
         OutMcastPkts: at("/outMcastPkts")
         TxError: at("/txError")
-        OutBitRate(Bps): at("/outBitRate")
+        OutBitRate(Mbps): at("/outBitRate")
