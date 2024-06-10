@@ -201,7 +201,7 @@ public class Constants {
         String STP_MODE = "STPMode";
         String AUTO_TRUNK = "AutoTrunk";
         String IS_VALID = "IsValid";
-        String UNIT_ID = "UnitId";
+        String UNIT_ID = "UnitID";
     }
 
     /**
