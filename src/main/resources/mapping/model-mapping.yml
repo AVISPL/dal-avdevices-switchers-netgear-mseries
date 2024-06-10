@@ -56,7 +56,7 @@ models:
         ID: at("/id")
         Description: at("/desc")
         Temperature: at("/temp")
-        MaxTemperature: at("/maxTemp")
+        MaximumTemperature: at("/maxTemp")
         State: at("/state")
   - model:
       name: UnitPort #DeviceUnit[%unitNo%]Sensor[%sensorId%]Details#
@@ -101,14 +101,14 @@ models:
       name: NeighborInformation
       filter: true
       properties:
-        UnitId: at("/unit")
+        UnitID: at("/unit")
         PortNumber: at("/portNum")
         PortString: at("/portName")
         HostName: at("/hostName")
-        VlanId: at("/vlanId")
+        VlanID: at("/vlanId")
         HostIPAddress: at("/hostIpAddress")
         HostMACAddress: at("/hostMacAddress")
-        RemotePortId: at("/remotePortId")
+        RemotePortID: at("/remotePortId")
         Source: at("/source")
         InBitRate(Mbps): at("/inBitRate")
         OutBitRate(Mbps): at("/outBitRate")
