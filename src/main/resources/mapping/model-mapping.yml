@@ -145,6 +145,8 @@ models:
       properties:
         OutData(Bytes): at("/outOctets")
         OutUcastPkts: at("/outUcastPkts")
+        OutBcastPkts: at("/outBcastPkts")
         OutMcastPkts: at("/outMcastPkts")
+        OutDroppedPkts: at("/outDropPkts")
         TxError: at("/txError")
         OutBitRate(Mbps): at("/outBitRate")
