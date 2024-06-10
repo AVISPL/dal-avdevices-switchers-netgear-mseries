@@ -56,7 +56,7 @@ models:
         ID: at("/id")
         Description: at("/desc")
         Temperature: at("/temp")
-        MaxTemperature: at("/maxTemp")
+        MaximumTemperature: at("/maxTemp")
         State: at("/state")
   - model:
       name: UnitPort #DeviceUnit[%unitNo%]Sensor[%sensorId%]Details#
@@ -101,17 +101,17 @@ models:
       name: NeighborInformation
       filter: true
       properties:
-        UnitId: at("/unit")
+        UnitID: at("/unit")
         PortNumber: at("/portNum")
         PortString: at("/portName")
         HostName: at("/hostName")
-        VlanId: at("/vlanId")
+        VLANID: at("/vlanId")
         HostIPAddress: at("/hostIpAddress")
         HostMACAddress: at("/hostMacAddress")
-        RemotePortId: at("/remotePortId")
+        LLDPRemotePortID: at("/remotePortId")
         Source: at("/source")
-        InBitRate(Bps): at("/inBitRate")
-        OutBitRate(Bps): at("/outBitRate")
+        InBitRate(Mbps): at("/inBitRate")
+        OutBitRate(Mbps): at("/outBitRate")
   - model:
       name: PortPOEInformation
       filter: true
@@ -138,13 +138,15 @@ models:
         InBcastPkts: at("/inBcastPkts")
         InDroppedPkts: at("/inDropPkts")
         RxError: at("/rxError")
-        InBitRate(Bps): at("/inBitRate")
+        InBitRate(Mbps): at("/inBitRate")
   - model:
       name: OutPortStatistics
       filter: true
       properties:
         OutData(Bytes): at("/outOctets")
         OutUcastPkts: at("/outUcastPkts")
+        OutBcastPkts: at("/outBcastPkts")
         OutMcastPkts: at("/outMcastPkts")
+        OutDroppedPkts: at("/outDropPkts")
         TxError: at("/txError")
-        OutBitRate(Bps): at("/outBitRate")
+        OutBitRate(Mbps): at("/outBitRate")
