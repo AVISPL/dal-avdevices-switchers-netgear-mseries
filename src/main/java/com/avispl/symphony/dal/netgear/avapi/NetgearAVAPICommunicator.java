@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import org.apache.http.conn.HttpHostConnectException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpRequest;
@@ -74,6 +75,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             ClientHttpResponse response = null;
             try {
                 response = execution.execute(request, body);
+
                 if (response.getRawStatusCode() == 403 && !request.getURI().toString().contains(Constants.URI.LOGIN)) {
                     authorizationToken = null;
                     authenticate();
@@ -81,6 +83,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 }
             } catch (Exception e) {
                 logger.error("Error occured during request interception", e);
+                if (response == null) {
+                    throw new ResourceNotReachableException("Unable to connect to the device, please check device state and network connectivity.");
+                }
             }
             return response;
         }
@@ -465,15 +470,14 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         requestWrapper.put(Constants.JsonProperties.USER, requestParameters);
         try {
             JsonNode response = doPost(Constants.URI.LOGIN, requestWrapper, JsonNode.class);
-            if (response == null) {
-                throw new RuntimeException("Unable to authorize, please check device state and network connectivity.");
-            }
             authorizationToken = response.at(Constants.JsonPaths.USER_SESSION).asText();
 
             //Basic response validation is done in OctetStreamToJsonConverter to avoid double-converting response
             if (StringUtils.isNullOrEmpty(authorizationToken)) {
                 throw new FailedLoginException("Login failed: empty authorization token, please check device credentials.");
             }
+        } catch (ResourceNotReachableException rnr) {
+            throw rnr;
         } catch (Exception e) {
             throw new FailedLoginException("Login failed: " + e.getMessage());
         }
