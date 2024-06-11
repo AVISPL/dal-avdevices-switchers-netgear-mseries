@@ -465,6 +465,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         requestWrapper.put(Constants.JsonProperties.USER, requestParameters);
         try {
             JsonNode response = doPost(Constants.URI.LOGIN, requestWrapper, JsonNode.class);
+            if (response == null) {
+                throw new RuntimeException("Unable to authorize, please check device state and network connectivity.");
+            }
             authorizationToken = response.at(Constants.JsonPaths.USER_SESSION).asText();
 
             //Basic response validation is done in OctetStreamToJsonConverter to avoid double-converting response
