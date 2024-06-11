@@ -74,6 +74,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             ClientHttpResponse response = null;
             try {
                 response = execution.execute(request, body);
+
                 if (response.getRawStatusCode() == 403 && !request.getURI().toString().contains(Constants.URI.LOGIN)) {
                     authorizationToken = null;
                     authenticate();
@@ -81,6 +82,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 }
             } catch (Exception e) {
                 logger.error("Error occured during request interception", e);
+                if (response == null) {
+                    throw new ResourceNotReachableException("Unable to connect to the device, please check device state and network connectivity.");
+                }
             }
             return response;
         }
@@ -471,6 +475,8 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             if (StringUtils.isNullOrEmpty(authorizationToken)) {
                 throw new FailedLoginException("Login failed: empty authorization token, please check device credentials.");
             }
+        } catch (ResourceNotReachableException rnr) {
+            throw rnr;
         } catch (Exception e) {
             throw new FailedLoginException("Login failed: " + e.getMessage());
         }
@@ -496,6 +502,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
      * */
     private void processDeviceInformation() throws Exception {
         JsonNode deviceInfoResponse = doGet(Constants.URI.DEVICE_INFO, JsonNode.class);
+        if (deviceInfoResponse == null) {
+            throw new RuntimeException("Unable to retrieve device information, please check device state and network connectivity.");
+        }
         Map<String, String> stackInfo = new HashMap<>();
 
         processDeviceDetailsInformation(deviceInfoResponse.withArray(Constants.JsonPaths.DEVICE_INFO_DETAILS));
@@ -521,7 +530,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 unitControls = new ArrayList<>();
                 unitDevice.setControllableProperties(unitControls);
             }
-            unitControls.add(createButton(Constants.Properties.REBOOT, Constants.Properties.REBOOT, "Rebooting...", 60000L));
+            unitControls.add(createButton(Constants.Properties.REBOOT, Constants.Properties.REBOOT, "Rebooting...", 120000L));
             unitProperties.put(Constants.Properties.REBOOT, Constants.Properties.REBOOT);
 
             generateAdapterMetadata(unitProperties);
@@ -534,6 +543,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 if (Constants.Properties.FAN_MODE.equals(key)) {
                     AdvancedControllableProperty fanModeToggle = createPreset(propertyName, new ArrayList<>(Constants.FAN_MODE_VALUES.keySet()), new ArrayList<>(Constants.FAN_MODE_VALUES.values()), value);
                     unitControls.add(fanModeToggle);
+                    value = Constants.FAN_MODE_VALUES.get(value); // In order to keep triggers functional, we need to provide human-readable label as a property value
                 }
                 unitProperties.put(propertyName, value);
             }
@@ -709,6 +719,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             return;
         }
         JsonNode portStatus = doGet(Constants.URI.PORTS_STATUS, JsonNode.class); // Port data, gotta exclude lag (portStr contains lag)
+        if (portStatus == null) {
+            logger.error("Error: No port information available.");
+            return;
+        }
         ArrayNode portsData = portStatus.withArray(Constants.JsonPaths.SWITCH_PORT_STATUS_ROWS);
         for (JsonNode port: portsData) {
             String portSrt = port.at(Constants.JsonPaths.PORT_STRING).asText();
@@ -749,7 +763,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             return;
         }
         JsonNode poePortsCfg = doGet(Constants.URI.POE_PORTS_CFG, JsonNode.class);
-
+        if (poePortsCfg == null) {
+            logger.error("Error: No PoE configuration information available.");
+            return;
+        }
         ArrayNode poeNodes = poePortsCfg.withArray(Constants.JsonPaths.POE_PORT_CONFIG);
         for (JsonNode poeNode: poeNodes) {
             Map<String, String> poeProperties = new HashMap<>();
@@ -826,6 +843,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             return;
         }
         JsonNode portsCfg = doGet(Constants.URI.PORTS_CFG, JsonNode.class);
+        if (portsCfg == null) {
+            logger.error("Error: No port configuration information available.");
+            return;
+        }
         ArrayNode unitPortConfigs = portsCfg.withArray(Constants.JsonPaths.SWITCH_PORT_CONFIG_UNIT);
         for (JsonNode unitConfig: unitPortConfigs) {
             String unitId = unitConfig.at(Constants.JsonPaths.ID).asText();
@@ -887,6 +908,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             return;
         }
         JsonNode neighborStatus = doGet(Constants.URI.NEIGHBOR_STATUS, JsonNode.class);
+        if (neighborStatus == null) {
+            logger.error("Error: No port neighbor status information available.");
+            return;
+        }
         ArrayNode rows = neighborStatus.withArray(Constants.JsonPaths.LLDP_REMOTE_DEVICE_ROWS);
 
         Map<String, Integer> portNeighborsCounter = new HashMap<>();
@@ -931,6 +956,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             return;
         }
         JsonNode portInResponse = doGet(Constants.URI.PORT_IN_STATISTICS, JsonNode.class);
+        if (portInResponse == null) {
+            logger.error("Error: No port inbound statistics available.");
+            return;
+        }
         ArrayNode portsInResponse = portInResponse.withArray(Constants.JsonPaths.PORT_STATISTICS_ROWS);
         for (JsonNode row: portsInResponse) {
             Map<String, String> rowData = new HashMap<>();
@@ -961,6 +990,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             return;
         }
         JsonNode portOutResponse = doGet(Constants.URI.PORT_OUT_STATISTICS, JsonNode.class);
+        if (portOutResponse == null) {
+            logger.error("Error: No port outbound statistics available.");
+            return;
+        }
         ArrayNode portsOutResponse = portOutResponse.withArray(Constants.JsonPaths.PORT_STATISTICS_ROWS);
         for (JsonNode row: portsOutResponse) {
             Map<String, String> rowData = new HashMap<>();
