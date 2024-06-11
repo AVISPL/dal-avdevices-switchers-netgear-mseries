@@ -538,6 +538,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 if (Constants.Properties.FAN_MODE.equals(key)) {
                     AdvancedControllableProperty fanModeToggle = createPreset(propertyName, new ArrayList<>(Constants.FAN_MODE_VALUES.keySet()), new ArrayList<>(Constants.FAN_MODE_VALUES.values()), value);
                     unitControls.add(fanModeToggle);
+                    value = Constants.FAN_MODE_VALUES.get(value); // In order to keep triggers functional, we need to provide human-readable label as a property value
                 }
                 unitProperties.put(propertyName, value);
             }
