@@ -497,8 +497,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
     private void processDeviceInformation() throws Exception {
         JsonNode deviceInfoResponse = doGet(Constants.URI.DEVICE_INFO, JsonNode.class);
         if (deviceInfoResponse == null) {
-            logger.error("Error: No device information available.");
-            return;
+            throw new RuntimeException("Unable to retrieve device information, please check device state and network connectivity.");
         }
         Map<String, String> stackInfo = new HashMap<>();
 
