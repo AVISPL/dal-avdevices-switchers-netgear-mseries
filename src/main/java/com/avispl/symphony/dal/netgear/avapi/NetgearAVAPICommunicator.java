@@ -1082,8 +1082,6 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
      * Initial format is: 2 days, 0 hrs, 16 mins, 15 secs
      * If the device was recently booted, sections go down to 0 but are still present, like so:
      * 0 days, 0 hrs, 0 mins, 15 secs
-     *
-     *
      * */
     private Long formatUptimeToLong(String uptime) {
         List<String> periods = Arrays.asList(uptime.split(",")); // 0 is days, 1 is hours, 2 is minutes, 3 is seconds
