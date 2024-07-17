@@ -1013,10 +1013,6 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         }
     }
 
-    private void processVLANInformation() {
-
-    }
-
     /**
      * We cant expect a response here, it's more of a "fire-and-forget" pattern,
      * so we just expect that the device is rebooted if we end up having "ResourceNotReachableException".
