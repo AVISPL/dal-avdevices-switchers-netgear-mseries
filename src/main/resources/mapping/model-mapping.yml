@@ -55,8 +55,8 @@ models:
       properties:
         ID: at("/id")
         Description: at("/desc")
-        Temperature: at("/temp")
-        MaximumTemperature: at("/maxTemp")
+        Temperature(C): at("/temp")
+        MaximumTemperature(C): at("/maxTemp")
         State: at("/state")
   - model:
       name: UnitPort #DeviceUnit[%unitNo%]Sensor[%sensorId%]Details#
