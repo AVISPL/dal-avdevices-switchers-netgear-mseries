@@ -530,7 +530,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 unitControls = new ArrayList<>();
                 unitDevice.setControllableProperties(unitControls);
             }
-            unitControls.add(createButton(Constants.Properties.REBOOT, Constants.Properties.REBOOT, "Rebooting...", 120000L));
+            unitControls.add(createButton(Constants.Properties.REBOOT, Constants.Properties.REBOOT, "Rebooting...", 150000L));
             unitProperties.put(Constants.Properties.REBOOT, Constants.Properties.REBOOT);
 
             generateAdapterMetadata(unitProperties);
@@ -562,7 +562,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         for(JsonNode node: deviceDetails) {
             AggregatedDevice aggregatedUnitDevice = new AggregatedDevice();
             GenericStatistics aggregatedUnitGenericStatistics = new GenericStatistics();
-            aggregatedUnitDevice.setMonitoredStatistics(Arrays.asList(aggregatedUnitGenericStatistics));
+            aggregatedUnitDevice.setMonitoredStatistics(Collections.singletonList(aggregatedUnitGenericStatistics));
 
             Map<String, String> deviceDetailsUnit = new HashMap<>();
 
@@ -703,8 +703,20 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             String unitId = memoryNode.at(Constants.JsonPaths.UNIT).asText();
             String cachedUnitSerialNumber = serialNumberToUnitNumber.inverse().get(unitId);
             AggregatedDevice cachedUnit = aggregatedStackUnits.get(cachedUnitSerialNumber);
-            Map<String, String> cachedUnitProperties = cachedUnit.getProperties();
-            cachedUnitProperties.put(Constants.Properties.MEMORY_USAGE, memoryNode.at(Constants.JsonPaths.USAGE).asText().replace(Constants.Misc.PCT, ""));
+
+            List<Statistics> cachedUnitStatistics = cachedUnit.getMonitoredStatistics();
+            if (cachedUnitStatistics == null) {
+                cachedUnitStatistics = new ArrayList<>();
+            }
+
+            Statistics statistics = cachedUnitStatistics.stream().filter(stats -> stats instanceof GenericStatistics).findAny().orElse(null);
+            if (statistics == null) {
+                statistics = new GenericStatistics();
+                cachedUnit.getMonitoredStatistics().add(statistics);
+            }
+
+            String memoryUsage = memoryNode.at(Constants.JsonPaths.USAGE).asText().replace(Constants.Misc.PCT, "");
+            ((GenericStatistics)statistics).setMemoryInUse(Float.valueOf(memoryUsage));
         }
     }
 
