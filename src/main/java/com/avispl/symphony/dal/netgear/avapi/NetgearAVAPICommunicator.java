@@ -704,6 +704,10 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             String cachedUnitSerialNumber = serialNumberToUnitNumber.inverse().get(unitId);
             AggregatedDevice cachedUnit = aggregatedStackUnits.get(cachedUnitSerialNumber);
 
+            Map<String, String> cachedUnitProperties = cachedUnit.getProperties();
+            String memoryUsage = memoryNode.at(Constants.JsonPaths.USAGE).asText().replace(Constants.Misc.PCT, "");
+            cachedUnitProperties.put(Constants.Properties.MEMORY_USAGE, memoryUsage);
+
             List<Statistics> cachedUnitStatistics = cachedUnit.getMonitoredStatistics();
             if (cachedUnitStatistics == null) {
                 cachedUnitStatistics = new ArrayList<>();
@@ -715,7 +719,6 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 cachedUnit.getMonitoredStatistics().add(statistics);
             }
 
-            String memoryUsage = memoryNode.at(Constants.JsonPaths.USAGE).asText().replace(Constants.Misc.PCT, "");
             ((GenericStatistics)statistics).setMemoryInUse(Float.valueOf(memoryUsage));
         }
     }
