@@ -46,7 +46,7 @@ models:
       properties:
         ID: at("/id")
         Description: at("/desc")
-        Speed: at("/speed")
+        Speed(rpm): at("/speed")
         DutyLevel: at("/dutyLevel")
         State: at("/state")
   - model:
