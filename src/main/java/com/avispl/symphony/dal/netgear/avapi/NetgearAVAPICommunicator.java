@@ -530,8 +530,9 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
                 unitControls = new ArrayList<>();
                 unitDevice.setControllableProperties(unitControls);
             }
-            unitControls.add(createButton(Constants.Properties.REBOOT, Constants.Properties.REBOOT, "Rebooting...", 150000L));
-            unitProperties.put(Constants.Properties.REBOOT, Constants.Properties.REBOOT);
+            // TODO: Uncomment when reboot is planned to be enabled
+//            unitControls.add(createButton(Constants.Properties.REBOOT, Constants.Properties.REBOOT, "Rebooting...", 150000L));
+//            unitProperties.put(Constants.Properties.REBOOT, Constants.Properties.REBOOT);
 
             generateAdapterMetadata(unitProperties);
             deviceDataProcessor.applyProperties(stackInfo, deviceInfoResponse, Constants.Properties.DEVICE_INFO);
