@@ -29,8 +29,8 @@ public class NetgearAVAPICommunicatorTest {
         communicator.setHost("10.30.30.103");
         communicator.setProtocol("http");
         communicator.setPort(80);
-        communicator.setLogin("");
-        communicator.setPassword("");
+        communicator.setLogin("admin");
+        communicator.setPassword("password");
         communicator.init();
     }
 
