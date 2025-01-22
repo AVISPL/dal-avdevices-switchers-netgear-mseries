@@ -1,0 +1,153 @@
+models:
+  - model:
+      name: generic
+      node: Base
+      vendor: Netgear
+  - model:
+      name: NetgearBase
+      vendor: Netgear
+      properties:
+        ResponseCode: at("/resp/respCode")
+        ResponseMessage: at("/resp/respMsg")
+        ResponseStatus: at("/resp/status")
+  - model:
+      name: LoginInformation
+      filter: true
+      properties:
+        Session: at("/user/session")
+  - model:
+      name: DeviceInfo #CPU and Memory must be pulled from /cpu and /memory for each unit
+      filter: true
+      mapping:
+      properties:
+        DeviceName: at("/deviceInfo/name")
+        MACAddress: at("/deviceInfo/mac")
+        IPAddress: at("/deviceInfo/servicePortIP")
+        AVUIVersion: at("/deviceInfo/avuiVer")
+        POE: at("/deviceInfo/poe")
+        STP: at("/deviceInfo/STP")
+        FanMode: at("/deviceInfo/fanMode")
+        Units: at("/deviceInfo/units")
+  - model:
+      name: DeviceDetailsUnitInfo #DeviceUnit[%unitNo%]Details#
+      filter: true
+      properties:
+        UnitNumber: at("/unit")
+        Management: at("/management")
+        Active: at("/active")
+        Model: at("/model")
+        FirmwareVersion: at("/fwVer")
+        BootVersion: at("/bootVer")
+        SerialNumber: at("/sn")
+        Uptime: at("/upTime")
+  - model:
+      name: DeviceUnitFanInfo #DeviceUnit[%unitNo%]Fan[%fanId%]Details#
+      filter: true
+      properties:
+        ID: at("/id")
+        Description: at("/desc")
+        Speed(rpm): at("/speed")
+        DutyLevel: at("/dutyLevel")
+        State: at("/state")
+  - model:
+      name: DeviceUnitSensorInfo #DeviceUnit[%unitNo%]Sensor[%sensorId%]Details#
+      filter: true
+      properties:
+        ID: at("/id")
+        Description: at("/desc")
+        Temperature(C): at("/temp")
+        MaximumTemperature(C): at("/maxTemp")
+        State: at("/state")
+  - model:
+      name: UnitPort #DeviceUnit[%unitNo%]Sensor[%sensorId%]Details#
+      filter: true
+      properties:
+        PortNumber: at("/portNum")
+        PortString: at("/portStr")
+        AdminState: at("/adminState")
+        FrameSize: at("/frameSize")
+        Description: at("/description")
+        ProfileName: at("/profileName")
+        ProfileTemplate: at("/profileTemplate")
+        LinkState: at("/linkState")
+        PhysicalMode: at("/physicalMode")
+        PhysicalStatus: at("/physicalStatus")
+        MediaType: at("/mediaType")
+        FlowControl: at("/flowControl")
+        Speed: at("/speed")
+  - model:
+      name: PortConfiguration
+      filter: true
+      properties:
+        PortNumber: at("/portNum")
+        PortString: at("/portName")
+        ModuleType: at("/moduleType")
+        PortCapability: at("/portCapability")
+        PortMode: at("/portMode")
+        PortType: at("/portType")
+        PortState: at("/portState")
+        STPMode: at("/stpMode")
+        AutoTrunk: at("/autoTrunk")
+        PowerUsage(mW): at("/powerUsage")
+        POEIsValid: at("/poeIsValid")
+        TrafficUsage: at("/trafficUsage")
+        BandwidthUpload(Mbps): at("/bandwidthUpload")
+        BandwidthDownload(Mbps): at("/bandwidthDownload")
+        PercetUtilizationReceived: at("/percetUtilizationReceived")
+        PercetUtilizationTransmitted: at("/percetUtilizationTransmitted")
+        AdminState: at("/adminState")
+        Dot1xStatus: at("/dot1xStatus")
+        ShureLearn: at("/shureLearn")
+  - model:
+      name: NeighborInformation
+      filter: true
+      properties:
+        UnitID: at("/unit")
+        PortNumber: at("/portNum")
+        PortString: at("/portName")
+        HostName: at("/hostName")
+        VLANID: at("/vlanId")
+        HostIPAddress: at("/hostIpAddress")
+        HostMACAddress: at("/hostMacAddress")
+        LLDPRemotePortID: at("/remotePortId")
+        Source: at("/source")
+        InBitRate(Mbps): at("/inBitRate")
+        OutBitRate(Mbps): at("/outBitRate")
+  - model:
+      name: PortPOEInformation
+      filter: true
+      properties:
+        UnitNumber: at("/unit")
+        PortNumber: at("/portNum")
+        Enable: at("/enable") #Controllable, true/false
+        PowerLimitMode: at("/powerLimitMode") #Controllable, number
+        Classification: at("/classification")
+        CurrentPower: at("/currentPower")
+        PowerLimit(mW): at("/powerLimit") #Controllable (mW) 3000-32000, number
+        Status: at("/status")
+        DetectionType: at("/detectionType") #Controllable
+        Priority: at("/priority") #Controllable
+        PowerMode: at("/powerMode") #Controllable
+        Schedule: at("/schedule")
+  - model:
+      name: InPortStatistics
+      filter: true
+      properties:
+        InData(Bytes): at("/inOctets")
+        InUcastPkts: at("/inUcastPkts")
+        InMcastPkts: at("/inMcastPkts")
+        InBcastPkts: at("/inBcastPkts")
+        InDroppedPkts: at("/inDropPkts")
+        RxError: at("/rxError")
+        InBitRate(Mbps): at("/inBitRate")
+  - model:
+      name: OutPortStatistics
+      filter: true
+      properties:
+        OutData(Bytes): at("/outOctets")
+        OutUcastPkts: at("/outUcastPkts")
+        OutBcastPkts: at("/outBcastPkts")
+        OutMcastPkts: at("/outMcastPkts")
+        OutDroppedPkts: at("/outDropPkts")
+        TxError: at("/txError")
+        OutBitRate(Mbps): at("/outBitRate")
