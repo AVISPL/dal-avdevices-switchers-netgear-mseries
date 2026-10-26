@@ -75,7 +75,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             try {
                 response = execution.execute(request, body);
 
-                if (response.getRawStatusCode() == 403 && !request.getURI().toString().contains(Constants.URI.LOGIN)) {
+                if (response.getStatusCode().value() == 403 && !request.getURI().toString().contains(Constants.URI.LOGIN)) {
                     authorizationToken = null;
                     authenticate();
                     return execution.execute(request, body);
@@ -372,18 +372,18 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
 
     @Override
     protected HttpHeaders putExtraRequestHeaders(HttpMethod httpMethod, String uri, HttpHeaders headers) throws Exception {
-        if (!headers.containsKey("Content-Type")) {
+        // getFirst()/set() instead of containsKey()/remove(): those have different signatures in Spring 6 and 7
+        if (headers.getFirst("Content-Type") == null) {
             headers.add("Content-Type", "application/json");
         }
-        if (!headers.containsKey("Accept")) {
+        if (headers.getFirst("Accept") == null) {
             headers.add("Accept", "application/json");
         }
         if (!uri.contains(Constants.URI.LOGIN)) {
             if (StringUtils.isNullOrEmpty(authorizationToken)) {
                 processLoginRequest();
             }
-            headers.remove("Session");
-            headers.add("Session", authorizationToken);
+            headers.set("Session", authorizationToken);
         }
         return super.putExtraRequestHeaders(httpMethod, uri, headers);
     }
