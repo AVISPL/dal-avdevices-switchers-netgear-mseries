@@ -308,20 +308,8 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
 
-        boolean managementSerialNumberSpecified = StringUtils.isNotNullOrEmpty(managementUnitSerialNumber);
-        if (managementSerialNumberSpecified && aggregatedStackUnits.size() != 1) {
-            throw new ServiceConfigurationError("Management unit serial number(managementUnitSerialNumber) is not configured, ambiguous monitoring settings. Please check adapter configuration.");
-        }
-
-        AggregatedDevice aggregatedUnit;
-        if (managementSerialNumberSpecified) {
-            aggregatedUnit = aggregatedStackUnits.get(managementUnitSerialNumber);
-        } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Management unit serial number(managementUnitSerialNumber) is not configured. Falling back to unit 1 for direct monitoring.");
-            }
-            aggregatedUnit = aggregatedStackUnits.get(serialNumberToUnitNumber.inverse().get("1"));
-        }
+        String resolvedManagementUnitSerialNumber = Utils.resolveManagementUnitSerialNumber(managementUnitSerialNumber, aggregatedStackUnits.keySet());
+        AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(resolvedManagementUnitSerialNumber);
         List<Statistics> unitStatisticsList = aggregatedUnit.getMonitoredStatistics();
         List<Statistics> statisticsList = new ArrayList<>();
 
@@ -513,14 +501,15 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processDeviceCPUInformation(deviceInfoResponse.withArray(Constants.JsonPaths.DEVICE_INFO_CPU));
         processDeviceMemoryInformation(deviceInfoResponse.withArray(Constants.JsonPaths.DEVICE_INFO_MEMORY));
 
-        if (StringUtils.isNullOrEmpty(managementUnitSerialNumber)) {
-           managementUnitSerialNumber = aggregatedStackUnits.values().stream().findFirst().map(AggregatedDevice::getSerialNumber).orElse(null);
+        String deviceInfoUnitSerialNumber = managementUnitSerialNumber;
+        if (StringUtils.isNullOrEmpty(deviceInfoUnitSerialNumber)) {
+            deviceInfoUnitSerialNumber = serialNumberToUnitNumber.inverse().get("1");
         }
-        if (StringUtils.isNotNullOrEmpty(managementUnitSerialNumber)) {
-            AggregatedDevice unitDevice = aggregatedStackUnits.get(managementUnitSerialNumber);
+        if (StringUtils.isNotNullOrEmpty(deviceInfoUnitSerialNumber)) {
+            AggregatedDevice unitDevice = aggregatedStackUnits.get(deviceInfoUnitSerialNumber);
             if (unitDevice == null) {
                 if (logger.isWarnEnabled()) {
-                    logger.warn("");
+                    logger.warn(String.format("Unable to find stack unit with serial number %s, skipping device information processing. Please check managementUnitSerialNumber configuration.", deviceInfoUnitSerialNumber));
                 }
                 return;
             }
