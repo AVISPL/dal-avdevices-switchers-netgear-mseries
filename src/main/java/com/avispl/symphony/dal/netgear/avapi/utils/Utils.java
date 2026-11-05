@@ -72,7 +72,7 @@ public class Utils {
             String unitNumber = entry.getValue();
             long parsedUnitNumber = StringUtils.isNullOrEmpty(unitNumber) ? Long.MAX_VALUE : extractNumber(unitNumber);
             if (defaultSerialNumber == null || parsedUnitNumber < lowestUnitNumber
-                    || (parsedUnitNumber == lowestUnitNumber && entry.getKey().compareTo(defaultSerialNumber) < 0)) {
+                    || parsedUnitNumber == lowestUnitNumber && entry.getKey().compareTo(defaultSerialNumber) < 0) {
                 defaultSerialNumber = entry.getKey();
                 lowestUnitNumber = parsedUnitNumber;
             }
