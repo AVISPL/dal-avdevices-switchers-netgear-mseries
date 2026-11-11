@@ -308,7 +308,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
 
-        String resolvedManagementUnitSerialNumber = Utils.resolveManagementUnitSerialNumber(managementUnitSerialNumber, aggregatedStackUnits.keySet());
+        String resolvedManagementUnitSerialNumber = Utils.resolveManagementUnitSerialNumber(managementUnitSerialNumber, serialNumberToUnitNumber);
         AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(resolvedManagementUnitSerialNumber);
         List<Statistics> unitStatisticsList = aggregatedUnit.getMonitoredStatistics();
         List<Statistics> statisticsList = new ArrayList<>();
@@ -503,7 +503,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
 
         String deviceInfoUnitSerialNumber = managementUnitSerialNumber;
         if (StringUtils.isNullOrEmpty(deviceInfoUnitSerialNumber)) {
-            deviceInfoUnitSerialNumber = serialNumberToUnitNumber.inverse().get("1");
+            deviceInfoUnitSerialNumber = Utils.defaultManagementUnitSerialNumber(serialNumberToUnitNumber);
         }
         if (StringUtils.isNotNullOrEmpty(deviceInfoUnitSerialNumber)) {
             AggregatedDevice unitDevice = aggregatedStackUnits.get(deviceInfoUnitSerialNumber);
