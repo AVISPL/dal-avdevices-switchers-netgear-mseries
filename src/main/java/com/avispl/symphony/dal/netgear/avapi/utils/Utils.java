@@ -33,6 +33,17 @@ public class Utils {
     }
 
     /**
+     * Check whether a stack unit is active, based on its device details "active" value.
+     * An inactive stack unit (active = false) is shown as an error instead of being monitored.
+     *
+     * @param active "active" value from the unit device details, may be null
+     * @return true if the value is "true" (case-insensitive, surrounding whitespace ignored), false otherwise
+     * */
+    public static boolean isUnitActive(String active) {
+        return active != null && Boolean.parseBoolean(active.trim());
+    }
+
+    /**
      * Resolve serial number of the unit to monitor in Unit monitoring mode.
      * The configured serial number is used if present in the stack, otherwise the default unit is used
      * (see {@link #defaultManagementUnitSerialNumber(Map)}).
