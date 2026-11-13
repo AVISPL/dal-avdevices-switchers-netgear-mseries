@@ -19,3 +19,5 @@ M4250, M4300, M4350, M4500
  - If the monitored unit is not active (an inactive stack member is still listed by the switch as "Not Present"), 
    the device is shown in error with the message `Stack unit <serial> (unit <number>) is not active`. 
    The adapter does not switch to another unit.
+ - If the configured managementUnitSerialNumber is not in the stack, the device is shown in error with the message 
+   `Configured serial <serial> is not in the stack (available units: [<serials>])`. The adapter does not fall back to unit 1.

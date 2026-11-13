@@ -3,12 +3,12 @@
  */
 package com.avispl.symphony.dal.netgear.avapi.utils;
 
+import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.ServiceConfigurationError;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -46,9 +46,10 @@ public class ManagementUnitSerialNumberResolverTest {
 
     @Test
     public void testConfiguredSerialNumberNotInStack() {
-        ServiceConfigurationError error = assertThrows(ServiceConfigurationError.class,
+        ResourceNotReachableException error = assertThrows(ResourceNotReachableException.class,
                 () -> Utils.resolveManagementUnitSerialNumber("UNKNOWN0001", TWO_UNIT_STACK));
-        assertTrue(error.getMessage().contains("UNKNOWN0001"), "Error message should name the configured serial number");
+        assertTrue(error.getMessage().startsWith("Configured serial UNKNOWN0001 is not in the stack"),
+                "Error message should name the configured serial number: " + error.getMessage());
     }
 
     @Test
