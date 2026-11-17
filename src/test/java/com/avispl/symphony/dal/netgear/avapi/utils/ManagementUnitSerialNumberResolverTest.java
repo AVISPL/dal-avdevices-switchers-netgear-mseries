@@ -3,7 +3,6 @@
  */
 package com.avispl.symphony.dal.netgear.avapi.utils;
 
-import com.avispl.symphony.api.dal.error.ResourceNotReachableException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -46,7 +45,7 @@ public class ManagementUnitSerialNumberResolverTest {
 
     @Test
     public void testConfiguredSerialNumberNotInStack() {
-        ResourceNotReachableException error = assertThrows(ResourceNotReachableException.class,
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> Utils.resolveManagementUnitSerialNumber("UNKNOWN0001", TWO_UNIT_STACK));
         assertTrue(error.getMessage().startsWith("Configured serial UNKNOWN0001 is not in the stack"),
                 "Error message should name the configured serial number: " + error.getMessage());
