@@ -301,6 +301,15 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
             return Collections.singletonList(extendedStatistics);
         }
         processDeviceInformation();
+
+        String resolvedManagementUnitSerialNumber = Utils.resolveManagementUnitSerialNumber(managementUnitSerialNumber, serialNumberToUnitNumber);
+        AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(resolvedManagementUnitSerialNumber);
+        // An inactive stack unit (active = false) is shown as an error instead of being monitored.
+        if (!Utils.isUnitActive(aggregatedUnit.getProperties().get(Constants.Properties.ACTIVE))) {
+            throw new ResourceNotReachableException(String.format("Stack unit %s (unit %s) is not active",
+                    resolvedManagementUnitSerialNumber, serialNumberToUnitNumber.get(resolvedManagementUnitSerialNumber)));
+        }
+
         processPortInformation();
         processPortConfigurationInformation();
         processPortNeighborInformation();
@@ -308,8 +317,6 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
         processPortInboundStatisticsInformation();
         processPortOutboundStatisticsInformation();
 
-        String resolvedManagementUnitSerialNumber = Utils.resolveManagementUnitSerialNumber(managementUnitSerialNumber, aggregatedStackUnits.keySet());
-        AggregatedDevice aggregatedUnit = aggregatedStackUnits.get(resolvedManagementUnitSerialNumber);
         List<Statistics> unitStatisticsList = aggregatedUnit.getMonitoredStatistics();
         List<Statistics> statisticsList = new ArrayList<>();
 
@@ -503,7 +510,7 @@ public class NetgearAVAPICommunicator extends RestCommunicator implements Monito
 
         String deviceInfoUnitSerialNumber = managementUnitSerialNumber;
         if (StringUtils.isNullOrEmpty(deviceInfoUnitSerialNumber)) {
-            deviceInfoUnitSerialNumber = serialNumberToUnitNumber.inverse().get("1");
+            deviceInfoUnitSerialNumber = Utils.defaultManagementUnitSerialNumber(serialNumberToUnitNumber);
         }
         if (StringUtils.isNotNullOrEmpty(deviceInfoUnitSerialNumber)) {
             AggregatedDevice unitDevice = aggregatedStackUnits.get(deviceInfoUnitSerialNumber);

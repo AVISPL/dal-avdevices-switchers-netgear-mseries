@@ -5,8 +5,7 @@ package com.avispl.symphony.dal.netgear.avapi.utils;
 
 import com.avispl.symphony.dal.util.StringUtils;
 
-import java.util.Collection;
-import java.util.ServiceConfigurationError;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,30 +32,63 @@ public class Utils {
     }
 
     /**
+     * Check whether a stack unit is active, based on its device details "active" value.
+     * An inactive stack unit (active = false) is shown as an error instead of being monitored.
+     *
+     * @param active "active" value from the unit device details, may be null
+     * @return true if the value is "true" (case-insensitive, surrounding whitespace ignored), false otherwise
+     * */
+    public static boolean isUnitActive(String active) {
+        return active != null && Boolean.parseBoolean(active.trim());
+    }
+
+    /**
      * Resolve serial number of the unit to monitor in Unit monitoring mode.
-     * The configured serial number is used if present in the stack, otherwise the only stack unit is used,
-     * if there is exactly one.
+     * The configured serial number is used if present in the stack, otherwise the default unit is used
+     * (see {@link #defaultManagementUnitSerialNumber(Map)}).
      *
      * @param configuredSerialNumber configured managementUnitSerialNumber value, may be null or empty
-     * @param stackUnitSerialNumbers serial numbers of the units currently retrieved from the stack
+     * @param serialNumberToUnitNumber serial number to unit number of the units currently retrieved from the stack
      * @return serial number of the unit to monitor
-     * @throws ServiceConfigurationError if the configured serial number is not in the stack,
-     * or if it is not configured and the stack has more than one unit
+     * @throws IllegalArgumentException if the configured serial number is not in the stack, so the device is
+     * shown in error
      * @throws IllegalStateException if it is not configured and no stack units were retrieved
      * */
-    public static String resolveManagementUnitSerialNumber(String configuredSerialNumber, Collection<String> stackUnitSerialNumbers) {
+    public static String resolveManagementUnitSerialNumber(String configuredSerialNumber, Map<String, String> serialNumberToUnitNumber) {
         if (StringUtils.isNotNullOrEmpty(configuredSerialNumber)) {
-            if (!stackUnitSerialNumbers.contains(configuredSerialNumber)) {
-                throw new ServiceConfigurationError(String.format("Management unit serial number (managementUnitSerialNumber) %s is not found in the stack, available units: %s. Please check adapter configuration.", configuredSerialNumber, stackUnitSerialNumbers));
+            if (!serialNumberToUnitNumber.containsKey(configuredSerialNumber)) {
+                throw new IllegalArgumentException(String.format("Configured serial %s is not in the stack (available units: %s)",
+                        configuredSerialNumber, serialNumberToUnitNumber.keySet()));
             }
             return configuredSerialNumber;
         }
-        if (stackUnitSerialNumbers.isEmpty()) {
+        String defaultSerialNumber = defaultManagementUnitSerialNumber(serialNumberToUnitNumber);
+        if (defaultSerialNumber == null) {
             throw new IllegalStateException("Unable to resolve management unit: no stack units were retrieved from the device.");
         }
-        if (stackUnitSerialNumbers.size() > 1) {
-            throw new ServiceConfigurationError("Management unit serial number (managementUnitSerialNumber) is not configured, ambiguous monitoring settings. Please check adapter configuration.");
+        return defaultSerialNumber;
+    }
+
+    /**
+     * Serial number of the unit used when managementUnitSerialNumber is not configured: the unit with unit number 1,
+     * or, if the stack has no unit 1, the unit with the lowest unit number.
+     * Selection is by unit number, never by map iteration order.
+     *
+     * @param serialNumberToUnitNumber serial number to unit number of the units currently retrieved from the stack
+     * @return serial number of the default unit, or null if no units were retrieved
+     * */
+    public static String defaultManagementUnitSerialNumber(Map<String, String> serialNumberToUnitNumber) {
+        String defaultSerialNumber = null;
+        long lowestUnitNumber = Long.MAX_VALUE;
+        for (Map.Entry<String, String> entry : serialNumberToUnitNumber.entrySet()) {
+            String unitNumber = entry.getValue();
+            long parsedUnitNumber = StringUtils.isNullOrEmpty(unitNumber) ? Long.MAX_VALUE : extractNumber(unitNumber);
+            if (defaultSerialNumber == null || parsedUnitNumber < lowestUnitNumber
+                    || parsedUnitNumber == lowestUnitNumber && entry.getKey().compareTo(defaultSerialNumber) < 0) {
+                defaultSerialNumber = entry.getKey();
+                lowestUnitNumber = parsedUnitNumber;
+            }
         }
-        return stackUnitSerialNumbers.iterator().next();
+        return defaultSerialNumber;
     }
 }
